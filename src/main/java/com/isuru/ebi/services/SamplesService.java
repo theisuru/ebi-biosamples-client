@@ -1,7 +1,10 @@
 package com.isuru.ebi.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isuru.ebi.api.ResponseOk;
+import com.isuru.ebi.api.ResponsePaged;
+import com.isuru.ebi.api.ResponseSimple;
+import com.isuru.ebi.api.Sample;
+import com.isuru.ebi.beans.AccessionPage;
 import com.isuru.ebi.util.ResourceURIs;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -30,7 +33,7 @@ public class SamplesService {
         try {
             HttpResponse httpResponse = client.execute(request);
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                ResponseOk response = objectMapper.readerFor(ResponseOk.class).readValue(httpResponse.getEntity().getContent());
+                ResponsePaged response = objectMapper.readerFor(ResponsePaged.class).readValue(httpResponse.getEntity().getContent());
                 noOfSamples = response.getPage().getTotalElements();
             } else {
                 noOfSamples = -1;
@@ -41,11 +44,71 @@ public class SamplesService {
             logger.severe("Failed to retrieve total number of samples: " + e.getMessage());
         } catch (IOException e) {
             noOfSamples = -1;
-            logger.severe("Failed to parse message: " + e.getMessage());
+            logger.severe("Failed to parse response message: " + e.getMessage());
         }
 
         return noOfSamples;
     }
 
+    public String getSampleNameFromAccession(String accession) {
+        HttpGet request = new HttpGet(resourceURIs.getUriForAccession(accession));
+        request.addHeader(HttpHeaders.ACCEPT, MEDIA_TYPE_APPLICATION_HAL_JSON);
+
+        String sampleName = null;
+        try {
+            HttpResponse httpResponse = client.execute(request);
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                ResponseSimple response = objectMapper.readerFor(ResponseSimple.class).readValue(httpResponse.getEntity().getContent());
+                sampleName = response.getName();
+            } else {
+                logger.severe("Failed to retrieve sample, Error code: " + httpResponse.getStatusLine().getStatusCode());
+            }
+        } catch (ClientProtocolException e) {
+            logger.severe("Failed to retrieve sample: " + e.getMessage());
+        } catch (IOException e) {
+            logger.severe("Failed to parse response message: " + e.getMessage());
+        }
+
+        return sampleName;
+    }
+
+    public AccessionPage getFilteredAccessions(String attribute, String value) {
+        return getFilteredAccessions(resourceURIs.getUriForSearchAttributeValue(attribute, value));
+    }
+
+    public AccessionPage getFilteredAccessions(String attribute, String value, long page, int size) {
+        return getFilteredAccessions(resourceURIs.getUriForSearchAttributeValue(attribute, value, page, size));
+    }
+
+    private AccessionPage getFilteredAccessions(String url) {
+        HttpGet request = new HttpGet(url);
+        request.addHeader(HttpHeaders.ACCEPT, MEDIA_TYPE_APPLICATION_HAL_JSON);
+
+        AccessionPage accessionPage = new AccessionPage();
+        StringBuilder accessionsBuilder = new StringBuilder();
+        try {
+            HttpResponse httpResponse = client.execute(request);
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                ResponsePaged response = objectMapper.readerFor(ResponsePaged.class).readValue(httpResponse.getEntity().getContent());
+                accessionPage.setPage(response.getPage());
+                if (response.getEmbedded() != null) {
+                    for (Sample sample : response.getEmbedded().getSamples()) {
+                        accessionsBuilder.append(sample.getAccession());
+                        accessionsBuilder.append(", ");
+                    }
+                }
+
+                accessionPage.setAccessions(accessionsBuilder.toString());
+            } else {
+                logger.severe("Failed to retrieve number of samples, Error code: " + httpResponse.getStatusLine().getStatusCode());
+            }
+        } catch (ClientProtocolException e) {
+            logger.severe("Failed to retrieve total number of samples: " + e.getMessage());
+        } catch (IOException e) {
+            logger.severe("Failed to parse message: " + e.getMessage());
+        }
+
+        return accessionPage;
+    }
 
 }

@@ -3,7 +3,7 @@ package com.isuru.ebi.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Sample {
+public class ResponseSimple {
     private String name;
     private String accession;
 
