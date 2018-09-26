@@ -21,9 +21,9 @@ public class SamplesServiceTest {
     @Test
     public void testGetSampleNameFromAccession() {
         SamplesService samplesService = new SamplesService();
-        String sampleName = samplesService.getSampleNameFromAccession("SAMD00000001");
+        String sampleName = samplesService.getSampleNameFromAccession("SAMEA1481290");
 
-        Assert.assertEquals("SAMD00000001", sampleName);
+        Assert.assertEquals("source GSM898528 1", sampleName);
     }
 
     @Test

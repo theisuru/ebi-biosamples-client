@@ -89,7 +89,7 @@ public class CmdClient {
     }
 
     private void printAccessionsForFilter(Scanner scanner, SamplesService samplesService) {
-        System.out.println("Please enter search query in format {attribute;value;page;size}: ");
+        System.out.println("Please enter search query in format {attribute:value:page:size}: ");
         String query = scanner.next();
         printAccessionsForFilter(samplesService, query);
     }

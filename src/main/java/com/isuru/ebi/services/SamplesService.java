@@ -84,26 +84,27 @@ public class SamplesService {
         HttpGet request = new HttpGet(url);
         request.addHeader(HttpHeaders.ACCEPT, MEDIA_TYPE_APPLICATION_HAL_JSON);
 
-        AccessionPage accessionPage = new AccessionPage();
-        StringBuilder accessionsBuilder = new StringBuilder();
+        AccessionPage accessionPage = null;
         try {
             HttpResponse httpResponse = client.execute(request);
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 ResponsePaged response = objectMapper.readerFor(ResponsePaged.class).readValue(httpResponse.getEntity().getContent());
+
+                accessionPage = new AccessionPage();
                 accessionPage.setPage(response.getPage());
+                StringBuilder accessionsBuilder = new StringBuilder();
                 if (response.getEmbedded() != null) {
                     for (Sample sample : response.getEmbedded().getSamples()) {
                         accessionsBuilder.append(sample.getAccession());
                         accessionsBuilder.append(", ");
                     }
                 }
-
                 accessionPage.setAccessions(accessionsBuilder.toString());
             } else {
-                logger.severe("Failed to retrieve number of samples, Error code: " + httpResponse.getStatusLine().getStatusCode());
+                logger.severe("Failed to retrieve results for attribute query, Error code: " + httpResponse.getStatusLine().getStatusCode());
             }
         } catch (ClientProtocolException e) {
-            logger.severe("Failed to retrieve total number of samples: " + e.getMessage());
+            logger.severe("Failed to retrieve results for attribute query: " + e.getMessage());
         } catch (IOException e) {
             logger.severe("Failed to parse message: " + e.getMessage());
         }
