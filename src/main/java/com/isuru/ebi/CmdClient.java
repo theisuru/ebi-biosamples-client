@@ -16,14 +16,13 @@ public class CmdClient {
         System.out.println("6 to run example, attribute query: disease:leukaemia:1:5");
         System.out.println("7 to run example, sample name from accession = SAMD00000001");
         System.out.println("------------------------------------------------------\n");
-        SamplesService samplesService = new SamplesService();
+        System.out.println("Please enter a function number: ");
 
+        SamplesService samplesService = new SamplesService();
         Scanner scanner = new Scanner(System.in);
         CmdClient cmdClient = new CmdClient();
-
-        System.out.print("Please enter a function number: ");
         while(cmdClient.listenForInput(scanner, samplesService)) {
-            System.out.print("Please enter a function number: ");
+            System.out.println("Please enter a function number: ");
         }
         System.out.println("Good-bye");
 
@@ -75,7 +74,7 @@ public class CmdClient {
     }
 
     private void printNameOfAccession(Scanner scanner, SamplesService samplesService) {
-        System.out.print("Please enter accession: ");
+        System.out.println("Please enter accession: ");
         String accession = scanner.next();
         printNameOfAccession(samplesService, accession);
     }
@@ -90,7 +89,7 @@ public class CmdClient {
     }
 
     private void printAccessionsForFilter(Scanner scanner, SamplesService samplesService) {
-        System.out.print("Please enter search query in format {attribute;value;page;size}: ");
+        System.out.println("Please enter search query in format {attribute;value;page;size}: ");
         String query = scanner.next();
         printAccessionsForFilter(samplesService, query);
     }
